@@ -22,7 +22,7 @@
 use utf8;
 use strict;
 
-my $lexique="emotaix.tsv";  # Lexique d'émotions
+my $lexique="ressources/ose/emotaix.tsv";  # Lexique d'émotions
 my $texte=$ARGV[0];         # Fichier à traiter
 my $sortie=$ARGV[1];        # Fichier de sortie
 my (%supra,%meta,%emotions,%sens);
@@ -80,7 +80,8 @@ while (my $ligne=<E>) {
 	    if ($cols[$i+4] ne "") { my $terme="$cols[$i] $cols[$i+1] $cols[$i+2] $cols[$i+3] $cols[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}	    
 	}
 	# Cas particuliers : pluriel, infinitif
-	if ($token=~/[rs]$/) { $token=~s/[rs]$//; if (exists $emotions{$token}) { my $info=&recupereEmotion($token); $tags.="$info ($token)"; }}
+	if ($token=~/[rs]$/ && $tags eq "") { $token=~s/[rs]$//; if (exists $emotions{$token}) { my $info=&recupereEmotion($token); $tags.="$info ($token)"; }}
+	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
 	$i++;
     }
 
