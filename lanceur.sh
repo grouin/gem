@@ -6,3 +6,8 @@ perl conversion-xml-to-tab.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_x
 # Application du lexique emotaix : fichiers *emo
 perl fouille-emotions-colonne.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
 perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
+
+# Analyse des fichiers et production de tableaux
+perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2
+perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ GMMP-radio
+perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ GMMP-tv
