@@ -15,14 +15,20 @@ perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/
 perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
 less ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*emo
 
-paste ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/bfmbusiness_6h-9h.gen ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/bfmbusiness_6h-9h.emo >~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/bfmbusiness_6h-9h.paste
-
-# Visualisation sous forme de code barres (pour communiquer sur le projet)
-#perl visualisation-code-barre_v1.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
-perl visualisation-code-barre_v1.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
-perl visualisation-code-barre_v2.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 100 32 16
-
 # Analyse des fichiers et production de tableaux (pour les labos SHS)
 perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2
 perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ GMMP-radio
 perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ GMMP-tv
+
+# Visualisation sous forme de code barres (pour communiquer sur le projet)
+#perl visualisation-code-barre_v1.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
+perl visualisation-code-barre_v1.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
+perl visualisation-code-barre_v2.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 300 32 16
+
+# Concaténation des fichiers *gen et *emo en *paste
+for fichier in `ls ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*gen`
+do
+    paste $fichier `echo $fichier | sed "s/gen/emo/"` >`echo $fichier | sed "s/gen/paste/"`
+done
+perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 300
+

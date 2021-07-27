@@ -1,7 +1,9 @@
-# Pour chaque fichier *emo, produit une ligne au format HTML avec une
-# barre verticale représentant une séquence de tokens de couleur
-# verte, rouge ou grise si émotions positive, négative ou sans émotion
-# identifiée dans la séquence.
+# Pour chaque fichier *paste (issu de la concaténation de *gen avec
+# *emo), produit une ligne au format HTML avec une barre verticale
+# représentant une séquence de tokens de couleur verte, rouge ou grise
+# si émotions positive, négative ou sans émotion identifiée dans la
+# séquence. La teinte varie en fonction du genre du locuteur : clair
+# pour les femmes, sombre pour les hommes.
 
 # Les trois valeurs numériques en argument correspondent à :
 # - la taille de la séquence en tokens analysée (une barre verticale
@@ -20,36 +22,36 @@
 # Auteur : Cyril Grouin, juillet 2021
 
 
-# perl visualisation-code-barre.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 10 32 2
+# perl visualisation-code-barre.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 100
 # less ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*emo
 # cat -n ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/lapremiereguadeloupe_6h-9h.emo | egrep "pol="
 
 use strict;
 
-my ($chemin,$tailleSequence,$modif,$dividende)=@ARGV;
+my ($chemin,$tailleSequence)=@ARGV;
 
-my @rep=<$chemin/*emo>;
-$tailleSequence=10 if (!$tailleSequence); # Taille en tokens des séquences à analyser : 1    10  20  30  100  150  200  500
-$modif=32 if (!$modif);                   # Valeur modifiant le code couleur décimal  : 128  32  16  64  32   32   32   32
-$dividende=2 if (!$dividende);            # Dividende de normalisation                : 1    2   2   12  16   32   48   48
+my @rep=<$chemin/*paste>;
+$tailleSequence=100 if (!$tailleSequence); # Taille en tokens des séquences à analyser
 
-my ($maxR,$maxV,$maxB)=(0,0,0);
 my %codebarre=();
 my %textecode=();
+my %genres=();
 
 foreach my $fichier (@rep) {
     open(E,'<:utf8',$fichier);
     my $i=0;
     my $tokens="";
     my $note=0;
+    my $genre=0;
     while (my $ligne=<E>) {
 	chomp $ligne;
 	my $expression=""; if ($ligne=~/\((.+)\)/) { $expression=$1; }
+	if ($ligne=~/^(\d)/) { $genre=$1; }
 	# Note en fonction de l'émotion identifiée par séquence de n tokens
 	if ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
 	elsif ($ligne=~/pol=positif/) { $note+=0.1; $tokens.="$expression\, "; }
 	$i++;
-	if ($i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $i=0; $note=0; $tokens=""; }
+	if ($i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$genre\;"; $i=0; $note=0; $tokens=""; }
     }
     close(E);
 }
@@ -60,34 +62,35 @@ print S " <body>\n  <div id=\"curseur\" class=\"infobulle\"><\/div>\n";
 print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute\;quence de $tailleSequence tokens</p>\n";
 print S " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 foreach my $fichier (sort keys %codebarre) {
-    my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.emo$//;
+    my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.paste$//;
     print S "<tr><td>$nom<td><td>";
     my $ligne=$codebarre{$fichier};
     my $ligne2=$textecode{$fichier};
+    my $ligne3=$genres{$fichier};
     my @notes=split(/\;/,$ligne);
     my @textes=split(/\;/,$ligne2);
+    my @genres=split(/\;/,$ligne3);
     my $k=0;
     foreach my $note (@notes) {
-	# Couleur de base : #808080
-	my $couleur=""; my $r=128; my $v=128; my $b=128;
-	if ($note==0) { $couleur="lightgrey"; $r=128; $v=128; $b=128; }
-	elsif ($note>0) { $couleur="darkgreen"; $r-=(($modif/($dividende/$tailleSequence))/2); $v+=($modif/($dividende/$tailleSequence)); }
-	elsif ($note<0) { $couleur="red"; $r+=($modif/($dividende/$tailleSequence)); $v-=(($modif/($dividende/$tailleSequence))/2); }
+	# Couleur de base : #FFFFFF
+	my $r=255; my $v=255; my $b=255;
+	# Femmes : bleu clair (positif), moyen (neutre), sombre (négatif)
+	if ($genres[$k]==2) {
+	    if ($note>0)    { $r=153; $v=255; $b=255; }
+	    elsif ($note<0) { $r=0; $v=153; $b=153; }
+	    else            { $r=76; $v=204; $b=204; }
+	}
+	# Hommes : jaune clair (positif), moyen (neutre), sombre (négatif)
+	elsif ($genres[$k]==1) {
+	    if ($note>0)    { $r=255; $v=255; $b=153; }
+	    elsif ($note<0) { $r=153; $v=153; $b=0; }
+	    else            { $r=204; $v=204; $b=76; }
+	}
+	else { $r=255; $v=255; $b=255; }
 
-	# Affichage ancienne version
-	#print S "<font style=\"background:$couleur;color:$couleur\" size=\"6\">.<\/font>";
-
-	# Normalisation pour ne pas dépasser les limites inférieures et supérieures
-	$r=255 if ($r>255); $v=255 if ($v>255); $b=255 if ($b>255);
-	$r=0 if ($r<0); $v=0 if ($v<0); $b=0 if ($b<0);
-	$maxR=$r if ($r>$maxR); $maxV=$v if ($v>$maxV); $maxB=$b if ($b>$maxB);
-	# - normalisation des bleus : 80 si r/v=80, 0 sinon ; permet du gris là où pas d'émotion, et des vert et rouge plus intenses
-	if ($r!=128 || $v!=128) { $b=0; }
 	# Conversion hexadécimale des codes couleur et normalisation
 	$r=sprintf("%x",$r); $v=sprintf("%x",$v); $b=sprintf("%x",$b);
 	$r="00" if ($r eq "0"); $v="00" if ($v eq "0"); $b="00" if ($b eq "0");
-	if ($r==80 && $v==80 && $b==80) { $r="ee"; $v="ee"; $b="ee"; }
-	if ($r eq "ee" && $v eq "ee" && $b eq "ee" && length($textes[$k])>1) { $r="ff"; $v="d7"; $b="00"; }
 	# Affichage
 	my $liste=$textes[$k]; $liste=~s/\, $//;
 	print S "<a onMouseOver=\"montre('$liste')\;\" onmouseout=\"cache()\;\">" if (length($textes[$k])>1);
@@ -95,7 +98,6 @@ foreach my $fichier (sort keys %codebarre) {
 	print S "</a>" if (length($textes[$k])>1);
 	$k++;
     }
-    warn "$maxR\t$maxV\t$maxB\n"; $maxR=0; $maxV=0; $maxB=0;
     print S "</td></tr>\n";
 }
 print S "</table></body></html>\n";
