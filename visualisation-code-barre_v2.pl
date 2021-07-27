@@ -33,7 +33,7 @@ $tailleSequence=10 if (!$tailleSequence); # Taille en tokens des séquences à a
 $modif=32 if (!$modif);                   # Valeur modifiant le code couleur décimal  : 128  32  16  64  32   32   32   32
 $dividende=2 if (!$dividende);            # Dividende de normalisation                : 1    2   2   12  16   32   48   48
 
-my ($note,$maxR,$maxV,$maxB)=(0,0,0,0);
+my ($maxR,$maxV,$maxB)=(0,0,0);
 my %codebarre=();
 my %textecode=();
 
@@ -41,6 +41,7 @@ foreach my $fichier (@rep) {
     open(E,'<:utf8',$fichier);
     my $i=0;
     my $tokens="";
+    my $note=0;
     while (my $ligne=<E>) {
 	chomp $ligne;
 	my @cols=split(/\t/,$ligne);
@@ -70,7 +71,7 @@ foreach my $fichier (sort keys %codebarre) {
     foreach my $sequence (@sequences) {
 	# Couleur de base : #808080
 	my $couleur=""; my $r=128; my $v=128; my $b=128;
-	if ($sequence==0) { $couleur="lightgrey"; }
+	if ($sequence==0) { $couleur="lightgrey"; $r=128; $v=128; $b=128; }
 	elsif ($sequence>0) { $couleur="darkgreen"; $r-=(($modif/($dividende/$tailleSequence))/2); $v+=($modif/($dividende/$tailleSequence)); }
 	elsif ($sequence<0) { $couleur="red"; $r+=($modif/($dividende/$tailleSequence)); $v-=(($modif/($dividende/$tailleSequence))/2); }
 
