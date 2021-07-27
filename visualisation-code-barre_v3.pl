@@ -28,10 +28,11 @@
 
 use strict;
 
-my ($chemin,$tailleSequence)=@ARGV;
+my ($chemin,$sortie,$tailleSequence)=@ARGV;
 
 my @rep=<$chemin/*paste>;
 $tailleSequence=100 if (!$tailleSequence); # Taille en tokens des séquences à analyser
+$sortie="visu-emo.html" if (!$sortie);
 
 my %codebarre=();
 my %textecode=();
@@ -56,7 +57,7 @@ foreach my $fichier (@rep) {
     close(E);
 }
 
-open(S,'>:utf8',"visu-emo.html");
+open(S,'>:utf8',$sortie);
 print S "<html>\n <head>\n  <style type=\"text/css\">\n  <!--\n  .infobulle { position: absolute\; visibility: hidden\; border: 1px solid #333333\; padding: 3px\; font-family: Verdana, Arial\; font-size: 12px\; background-color: #EEEEEE\; }\n  \/\/-->\n  </style>\n  <script type=\"text/javascript\" src=\"infobulle.js\"></script>\n </head>\n";
 print S " <body>\n  <div id=\"curseur\" class=\"infobulle\"><\/div>\n";
 print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute\;quence de $tailleSequence tokens</p>\n";
@@ -87,6 +88,8 @@ foreach my $fichier (sort keys %codebarre) {
 	    else            { $r=204; $v=204; $b=76; }
 	}
 	else { $r=255; $v=255; $b=255; }
+	# Absence d'émotion, on passe au blanc
+	if (length($textes[$k])<1) { $r=255; $v=255; $b=255; }
 
 	# Conversion hexadécimale des codes couleur et normalisation
 	$r=sprintf("%x",$r); $v=sprintf("%x",$v); $b=sprintf("%x",$b);

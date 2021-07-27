@@ -26,9 +26,21 @@ perl visualisation-code-barre_v1.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/li
 perl visualisation-code-barre_v2.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 300 32 16
 
 # Concaténation des fichiers *gen et *emo en *paste
+for fichier in `ls ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/*gen`
+do
+    paste $fichier `echo $fichier | sed "s/gen/emo/"` >`echo $fichier | sed "s/gen/paste/"`
+done
+
+for fichier in `ls ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/*gen`
+do
+    paste $fichier `echo $fichier | sed "s/gen/emo/"` >`echo $fichier | sed "s/gen/paste/"`
+done
+
 for fichier in `ls ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*gen`
 do
     paste $fichier `echo $fichier | sed "s/gen/emo/"` >`echo $fichier | sed "s/gen/paste/"`
 done
-perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ 300
 
+perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2.html 100
+perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ gmmp-tv.html 90
+perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ gmmp-radio.html 150
