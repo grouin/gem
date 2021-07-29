@@ -62,10 +62,8 @@ print S " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 foreach my $fichier (sort keys %codebarre) {
     my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.emo$//;
     print S "<tr><td>$nom<td><td>";
-    my $ligne=$codebarre{$fichier};
-    my $ligne2=$textecode{$fichier};
-    my @notes=split(/\;/,$ligne);
-    my @textes=split(/\;/,$ligne2);
+    my @notes=split(/\;/,$codebarre{$fichier});
+    my @textes=split(/\;/,$textecode{$fichier});
     my $k=0;
     foreach my $note (@notes) {
 	# Couleur de base : #808080

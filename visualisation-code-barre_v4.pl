@@ -5,19 +5,14 @@
 # l'ASR). La teinte varie en fonction de la polarité : clair
 # (positif), sombre (négatif), moyen (équilibre positif/négatif).
 
-# Les trois valeurs numériques en argument correspondent à :
-# - la taille de la séquence en tokens analysée (une barre verticale
-#   en sortie représente une séquence)
-# - la valeur ajoutée ou retranchée dès qu'une opinion positive ou
-#   négative est trouvée dans la séquence (une valeur de 128 est assez
-#   binaire, des valeurs moindres permettent de travailler avec des
-#   variations si jamais la séquence contient plusieurs émotions de
-#   valence différente)
-# - un dividende qui permet de s'assurer que les couleurs restent
-#   vives si la valeur de modification du code couleur n'est pas de
-#   128. S'assurer que les valeurs maximales affichées à l'écran
-#   montent bien jusqu'à 255. Si ce n'est pas le cas, réduire la
-#   valeur du dividende
+# Un argument (valeur numérique) correspondant à la taille maximale de
+# la séquence en tokens analysée (une barre verticale en sortie
+# représente une séquence) si une différence de genre n'a pas déjà
+# segmenté la séquence. Remarques : on passe à la séquence suivante si
+# le genre identifié diffère du précédent ; il est normal que la
+# dernière barre d'une séquence corresponde au nombre maximum de
+# tokens (cela signifie que la suite de la portion ne contenait aucune
+# émotion et apparait en blanc)
 
 # Auteur : Cyril Grouin, juillet 2021
 
@@ -37,6 +32,7 @@ $sortie="visu-emo.html" if (!$sortie);
 my %codebarre=();
 my %textecode=();
 my %genres=();
+my %nb=();
 
 foreach my $fichier (@rep) {
     open(E,'<:utf8',$fichier);
@@ -44,6 +40,7 @@ foreach my $fichier (@rep) {
     my $tokens="";
     my $note=0;
     my $genre=0;
+    my $prec=0;
     while (my $ligne=<E>) {
 	chomp $ligne;
 	my $expression=""; if ($ligne=~/\((.+)\)/) { $expression=$1; }
@@ -52,7 +49,8 @@ foreach my $fichier (@rep) {
 	if ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
 	elsif ($ligne=~/pol=positif/) { $note+=0.1; $tokens.="$expression\, "; }
 	$i++;
-	if ($i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$genre\;"; $i=0; $note=0; $tokens=""; }
+	if ($genre!=$prec || $i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$genre\;"; $nb{$fichier}.="$i\;"; $i=0; $note=0; $tokens=""; }
+	$prec=$genre;
     }
     close(E);
 }
@@ -60,7 +58,7 @@ foreach my $fichier (@rep) {
 open(S,'>:utf8',$sortie);
 print S "<html>\n <head>\n  <style type=\"text/css\">\n  <!--\n  .infobulle { position: absolute\; visibility: hidden\; border: 1px solid #333333\; padding: 3px\; font-family: Verdana, Arial\; font-size: 12px\; background-color: #EEEEEE\; }\n  \/\/-->\n  </style>\n  <script type=\"text/javascript\" src=\"infobulle.js\"></script>\n </head>\n";
 print S " <body>\n  <div id=\"curseur\" class=\"infobulle\"><\/div>\n";
-print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute\;quence de $tailleSequence tokens</p>\n";
+print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute;quence exclusivement f&eacute;minine ou masculine et au maximum compos&eacute;e de $tailleSequence tokens</p>\n";
 print S " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 foreach my $fichier (sort keys %codebarre) {
     my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.paste$//;
@@ -68,6 +66,7 @@ foreach my $fichier (sort keys %codebarre) {
     my @notes=split(/\;/,$codebarre{$fichier});
     my @textes=split(/\;/,$textecode{$fichier});
     my @idGenre=split(/\;/,$genres{$fichier});
+    my @nbTok=split(/\;/,$nb{$fichier});
     my $k=0;
     foreach my $note (@notes) {
 	# Couleur de base : #FFFFFF
@@ -93,7 +92,7 @@ foreach my $fichier (sort keys %codebarre) {
 	$r="00" if ($r eq "0"); $v="00" if ($v eq "0"); $b="00" if ($b eq "0");
 	# Affichage
 	my $liste=$textes[$k]; $liste=~s/\, $//;
-	print S "<a onMouseOver=\"montre('$liste')\;\" onmouseout=\"cache()\;\">" if (length($textes[$k])>1);
+	print S "<a onMouseOver=\"montre('$liste (s\&eacute\;quence de $nbTok[$k] tokens)')\;\" onmouseout=\"cache()\;\">" if (length($textes[$k])>1);
 	print S "<font style=\"background:\#$r$v$b;color:\#$r$v$b\" size=\"6\">.<\/font>";
 	print S "</a>" if (length($textes[$k])>1);
 	$k++;
