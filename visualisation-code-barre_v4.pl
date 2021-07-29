@@ -46,7 +46,8 @@ foreach my $fichier (@rep) {
 	my $expression=""; if ($ligne=~/\((.+)\)/) { $expression=$1; }
 	if ($ligne=~/^(\d)/) { $genre=$1; }
 	# Note en fonction de l'émotion identifiée par séquence de n tokens
-	if ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
+	if ($ligne=~/cla=malveillance/) { $note=-10; $tokens.="$expression\, "; }
+	elsif ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
 	elsif ($ligne=~/pol=positif/) { $note+=0.1; $tokens.="$expression\, "; }
 	$i++;
 	if ($genre!=$prec || $i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$genre\;"; $nb{$fichier}.="$i\;"; $i=0; $note=0; $tokens=""; }
@@ -58,7 +59,7 @@ foreach my $fichier (@rep) {
 open(S,'>:utf8',$sortie);
 print S "<html>\n <head>\n  <style type=\"text/css\">\n  <!--\n  .infobulle { position: absolute\; visibility: hidden\; border: 1px solid #333333\; padding: 3px\; font-family: Verdana, Arial\; font-size: 12px\; background-color: #EEEEEE\; }\n  \/\/-->\n  </style>\n  <script type=\"text/javascript\" src=\"infobulle.js\"></script>\n </head>\n";
 print S " <body>\n  <div id=\"curseur\" class=\"infobulle\"><\/div>\n";
-print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute;quence exclusivement f&eacute;minine ou masculine et au maximum compos&eacute;e de $tailleSequence tokens</p>\n";
+print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute;quence exclusivement f&eacute\;minine (bleu) ou masculine (jaune) et au maximum compos&eacute\;e de $tailleSequence tokens. La teinte renvoie &agrave\; une polarit&eacute\; majoritairement positive (clair), n&eacute\;gative (sombre) ou parfaitement &eacute\;quilibr&eacute\;e entre positif et n&eacute\;gatif (moyen)</p>\n";
 print S " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 foreach my $fichier (sort keys %codebarre) {
     my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.paste$//;
@@ -74,12 +75,14 @@ foreach my $fichier (sort keys %codebarre) {
 	# Femmes : bleu clair (positif), moyen (neutre), sombre (négatif)
 	if ($idGenre[$k]==2) {
 	    if ($note>0)    { $r=153; $v=255; $b=255; }
+	    elsif ($note<-9) { $r=76; $v=76; $b=255; } # malveillance : bleu roi
 	    elsif ($note<0) { $r=0; $v=153; $b=153; }
 	    else            { $r=76; $v=204; $b=204; }
 	}
 	# Hommes : jaune clair (positif), moyen (neutre), sombre (négatif)
 	elsif ($idGenre[$k]==1) {
 	    if ($note>0)    { $r=255; $v=255; $b=153; }
+	    elsif ($note<-9) { $r=221; $v=153; $b=0; } # malveillance : orange
 	    elsif ($note<0) { $r=153; $v=153; $b=0; }
 	    else            { $r=204; $v=204; $b=76; }
 	}
