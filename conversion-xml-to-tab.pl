@@ -24,10 +24,12 @@ if (!$min) { $min=0.5; }
 foreach my $in (@rep) {
     my $out=$in; $out=~s/xml$/tab/;
     my $out2=$in; $out2=~s/xml$/gen/;
-    warn "Produit $out à partir de $in\n";
+    my $out3=$in; $out3=~s/xml$/time/;
+    warn "Produit à partir de $in :\n- $out\n- $out2\n- $out3\n";
     open(E,'<:utf8',$in);
     open(S,'>:utf8',$out);
     open(G,'>:utf8',$out2);
+    open(T,'>:utf8',$out3);
     my %corr=(); my $g="";
     while (my $ligne=<E>) {
     	chomp $ligne;
@@ -36,16 +38,18 @@ foreach my $in (@rep) {
 	# Récupération des tours de parole et du genre associé à l'identifiant du locuteur
 	if ($ligne=~/SpeechSegment .* spkid=\"(S\d+)\"/) { my $id=$1; $g=$corr{$id}; }
     	# On imprime le token s'il s'agit d'une ligne de transcription
-    	if ($ligne=~/<Word .* conf=\"([0-9\.]+)\"> (.*) <\/Word>/) {
-    	    my ($conf,$token)=($1,$2);
+    	if ($ligne=~/<Word .* stime=\"([0-9\.]+)\" .* conf=\"([0-9\.]+)\"> (.*) <\/Word>/) {
+    	    my ($t,$conf,$token)=($1,$2,$3);
     	    # Affichage du token si la confiance est supérieure à un seuil
     	    ($conf>=$min) ? (print S "$token\n") : (print S "\n");
     	    ($conf>=$min) ? (print G "$g\n") : (print G "\n");
+    	    ($conf>=$min) ? (print T "$t\n") : (print T "\n");
     	}
     	# Sinon une ligne vide
-    	else { print S "\n"; print G "\n"; }
+    	else { print S "\n"; print G "\n"; print T "\n"; }
     }
     close(E);
     close(S);
     close(G);
+    close(T);
 }
