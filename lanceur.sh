@@ -10,15 +10,11 @@ less ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*tab
 perl fouille-emotions-colonne.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
 perl fouille-emotions-colonne.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/
 perl fouille-emotions-colonne.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
+cat ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*emo | grep -P "[^\t]$"
 perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
 perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/
 perl ratio-polarite.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
 less ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*emo
-
-# Analyse des fichiers et production de tableaux (pour les labos SHS)
-perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2
-perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ GMMP-radio
-perl produit-tableaux-analyse.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ GMMP-tv
 
 
 # Concaténation des fichiers *gen et *emo en *paste : permet d'avoir
@@ -57,6 +53,13 @@ rm -Rf tmp/
 cd ~/Bureau/outils/GitHub/gem
 
 less ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/*tsv
+
+
+# Analyse des fichiers et production de tableaux (pour les labos SHS)
+perl produit-tableaux-analyse-v2.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2
+perl produit-tableaux-analyse-v2.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ GMMP-radio
+perl produit-tableaux-analyse-v2.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ GMMP-tv
+
 
 
 ###

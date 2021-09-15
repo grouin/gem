@@ -26,9 +26,12 @@ my %polarite=(
     "anxiété"=>"négatif",
     "bien-être"=>"positif",
     "bienveillance"=>"positif",
+    "impassibilité"=>"inconnu",
     "mal-être"=>"négatif",
     "malveillance"=>"négatif",
-    "sang-froid"=>"positif"
+    "sang-froid"=>"positif",
+    "surprise"=>"inconnu",
+    "non-specifié"=>"inconnu"
     );
 
 
