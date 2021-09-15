@@ -11,10 +11,12 @@ foreach my $fichier (@rep) {
     my ($pos,$neg,$mal,$tot,$warn)=(0,0,0,0,"");
     open(E,'<:utf8',$fichier);
     while (my $ligne=<E>) {
-	$pos++ if ($ligne=~/pol=positif/);
-	$neg++ if ($ligne=~/pol=négatif/);
-	$mal++ if ($ligne=~/cla=malveillance/);
-	$tot++ if ($ligne=~/emo=/);
+	chomp $ligne;
+	my @cols=split(/\t/,$ligne);
+	$pos++ if ($cols[4]=~/positif/);
+	$neg++ if ($cols[4]=~/négatif/);
+	$mal++ if ($cols[3]=~/malveillance/);
+	$tot++ if ($cols[2] ne "");
     }
     close(E);
 
