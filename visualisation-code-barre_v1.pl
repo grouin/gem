@@ -12,9 +12,12 @@ my %codebarre=();
 foreach my $fichier (@rep) {
     open(E,$fichier);
     while (my $ligne=<E>) {
+        my @cols=split(/\t/,$ligne);
 	# Code couleur en fonction de l'émotion identifiée
-	if ($ligne=~/pol=négatif/) { $couleur="red"; }
-	elsif ($ligne=~/pol=positif/) { $couleur="darkgreen"; }
+	# if ($ligne=~/pol=négatif/) { $couleur="red"; }
+	# elsif ($ligne=~/pol=positif/) { $couleur="darkgreen"; }
+	if ($cols[4]=~/négatif/) { $couleur="red"; }
+	elsif ($cols[4]=~/positif/) { $couleur="darkgreen"; }
 	elsif ($ligne=~/^\w+/) { $couleur="lightgrey"; }
 	else { $couleur="white"; }
 	$codebarre{$fichier}.="<font color=\"$couleur\">|</font>";

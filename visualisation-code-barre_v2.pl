@@ -44,10 +44,13 @@ foreach my $fichier (@rep) {
     my $note=0;
     while (my $ligne=<E>) {
 	chomp $ligne;
-	my $expression=""; if ($ligne=~/\((.+)\)/) { $expression=$1; }
+        my @cols=split(/\t/,$ligne);
+	my $expression=""; if ($cols[5] ne "") { $expression=$cols[5]; }  #if ($ligne=~/\((.+)\)/) { $expression=$1; }
 	# Note en fonction de l'émotion identifiée par séquence de n tokens
-	if ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
-	elsif ($ligne=~/pol=positif/) { $note+=0.1; $tokens.="$expression\, "; }
+	#if ($ligne=~/pol=n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
+	#elsif ($ligne=~/pol=positif/) { $note+=0.1; $tokens.="$expression\, "; }
+	if ($cols[4]=~/n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
+	elsif ($cols[4]=~/positif/) { $note+=0.1; $tokens.="$expression\, "; }
 	$i++;
 	if ($i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $i=0; $note=0; $tokens=""; }
     }

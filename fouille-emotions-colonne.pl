@@ -74,17 +74,17 @@ foreach my $texte (@rep) {
 
 	### 
 	# Recherche d'un mot isolé
-	if (exists $emotions{$token}) { my $info=&recupereEmotion($token); $tags.="$info ($token)"; }
+	if (exists $emotions{$token}) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
 	# Recherche d'expressions multi-tokens (de deux à cinq tokens)
 	else {
-	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
-	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
-	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
-	    if ($lignes[$i+4] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3] $lignes[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
+	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+4] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3] $lignes[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 	}
 	# Cas particuliers : pluriel, infinitif
-	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
-	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info ($terme)"; }}
+	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 
 	#$tags=~s/ \(.*\)$//;
 	print S "$token\t$tags\n";
@@ -96,7 +96,8 @@ foreach my $texte (@rep) {
 
 sub recupereEmotion() {
     my $t=shift; my $s="";
-    if ($emotions{$t} eq $meta{$t}) { $s="$emotions{$t}"; }
-    else { $s="emo=$emotions{$t}/cat=$meta{$t}/cla=$supra{$t}/pol=$polarite{$supra{$t}}"; }
+    #if ($emotions{$t} eq $meta{$t}) { $s="$emotions{$t}"; }
+    #else { $s="emo=$emotions{$t}/cat=$meta{$t}/cla=$supra{$t}/pol=$polarite{$supra{$t}}"; }
+    $s="$emotions{$t}\t$meta{$t}\t$supra{$t}\t$polarite{$supra{$t}}";
     return $s;
 }
