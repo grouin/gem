@@ -1,20 +1,23 @@
 # Pour chaque fichier *paste (issu de la concaténation de *gen avec
 # *emo), produit une ligne au format HTML avec une barre verticale
 # représentant un tour de parole de couleur bleu (femmes), jaune
-# (hommes) ou blanche (absence d'émotion ou trop d'erreur de
+# (hommes) ou blanche (absence d'émotion et/ou trop d'erreurs de
 # l'ASR). La teinte varie en fonction de la polarité : clair
-# (positif), sombre (négatif), moyen (équilibre positif/négatif).
+# (positif), sombre (négatif), moyen (équilibre positif/négatif). Un
+# point d'exclamation représente l'identification d'un concept de la
+# classe malveillance parmi la séquence analysée.
 
 # Un argument (valeur numérique) correspondant à la taille maximale de
 # la séquence en tokens analysée (une barre verticale en sortie
-# représente une séquence) si une différence de genre n'a pas déjà
-# segmenté la séquence. Remarques : on passe à la séquence suivante si
-# le genre identifié diffère du précédent ; il est normal que la
-# dernière barre d'une séquence corresponde au nombre maximum de
-# tokens (cela signifie que la suite de la portion ne contenait aucune
-# émotion et apparait en blanc)
+# représente un tour de parole ou une séquence de n tokens dans un
+# tour de parole) si une différence de genre n'a pas déjà segmenté la
+# séquence. Remarques : on passe à la séquence suivante si le genre
+# identifié diffère du précédent ; il est normal que la dernière barre
+# d'une séquence corresponde au nombre maximum de tokens (cela
+# signifie que la suite de la portion ne contenait aucune émotion et
+# apparait en blanc)
 
-# Auteur : Cyril Grouin, juillet/octobre 2021
+# Auteur : Cyril Grouin, octobre 2021
 
 
 # perl visualisation-code-barre_v5.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ visu-emo.html 100
@@ -26,7 +29,6 @@ use strict;
 my ($chemin,$sortie,$tailleSequence)=@ARGV;
 
 my @rep=<$chemin/*paste>;
-#$tailleSequence=100 if (!$tailleSequence); # Taille en tokens des séquences à analyser
 $sortie="visu-emo.html" if (!$sortie);
 
 my %codebarre=();
@@ -79,16 +81,14 @@ foreach my $fichier (sort keys %codebarre) {
 	# Femmes : bleu clair (positif), moyen (neutre), sombre (négatif)
 	if ($idGenre[$k]==2) {
 	    if ($note>0)    { $r=153; $v=255; $b=255; }
-	    #elsif ($note<-9) { $r=76; $v=76; $b=255; } # malveillance : bleu roi
 	    elsif ($note<0) { $r=0; $v=153; $b=153; }
 	    else            { $r=76; $v=204; $b=204; }
 	}
 	# Hommes : jaune clair (positif), moyen (neutre), sombre (négatif)
 	elsif ($idGenre[$k]==1) {
-	    if ($note>0)    { $r=255; $v=255; $b=153; }
-	    #elsif ($note<-9) { $r=221; $v=153; $b=0; } # malveillance : orange
-	    elsif ($note<0) { $r=153; $v=153; $b=0; }
-	    else            { $r=204; $v=204; $b=76; }
+	    if ($note>0)    { $r=255; $v=255; $b=76; }
+	    elsif ($note<0) { $r=255; $v=170; $b=0; }
+	    else            { $r=255; $v=221; $b=0; }
 	}
 	else { $r=255; $v=255; $b=255; }
 	# Absence d'émotion, on passe au blanc
