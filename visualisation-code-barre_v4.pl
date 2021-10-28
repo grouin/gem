@@ -63,7 +63,7 @@ foreach my $fichier (@rep) {
 open(S,'>:utf8',$sortie);
 print S "<html>\n <head>\n  <style type=\"text/css\">\n  <!--\n  .infobulle { position: absolute\; visibility: hidden\; border: 1px solid #333333\; padding: 3px\; font-family: Verdana, Arial\; font-size: 12px\; background-color: #EEEEEE\; }\n  \/\/-->\n  </style>\n  <script type=\"text/javascript\" src=\"infobulle.js\"></script>\n </head>\n";
 print S " <body>\n  <div id=\"curseur\" class=\"infobulle\"><\/div>\n";
-print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute;quence exclusivement f&eacute\;minine (bleu) ou masculine (jaune) et au maximum compos&eacute\;e de $tailleSequence tokens. La teinte renvoie &agrave\; une polarit&eacute\; majoritairement positive (clair), n&eacute\;gative (sombre) ou parfaitement &eacute\;quilibr&eacute\;e entre positif et n&eacute\;gatif (moyen)</p>\n";
+print S " <p>Chaque barre verticale correspond &agrave\; une s&eacute;quence exclusivement f&eacute\;minine (bleu) ou masculine (jaune) et au maximum compos&eacute\;e de $tailleSequence tokens. La teinte renvoie &agrave\; une polarit&eacute\; majoritairement positive (clair), n&eacute\;gative (sombre), parfaitement &eacute\;quilibr&eacute\;e entre positif et n&eacute\;gatif (moyen), ou malveillance (bleu roi ou orange)</p>\n";
 print S " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 foreach my $fichier (sort keys %codebarre) {
     my $nom=$fichier; $nom=~s/^.*\///; $nom=~s/.paste$//;
