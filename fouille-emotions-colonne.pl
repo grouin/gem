@@ -33,10 +33,20 @@ my %polarite=(
     "surprise"=>"inconnu",
     "non-specifié"=>"inconnu"
     );
+# Dictionnaire d'exclusion : contexte => termes
+my %exclusions=(
+    "aucun"=>"souci",
+    "dans un"=>"souci"
+    );
 
 
 ###
-# Récupération des termes et expressions d'émotions
+# Récupération des termes et expressions d'émotions (emotaix)
+#
+# souci	anxiété	tension	inquiétude	propre
+# soucier	anxiété	tension	inquiétude	propre
+# soucieusement	anxiété	tension	inquiétude	propre
+# soucieux	anxiété	tension	inquiétude	propre
 
 open(E,'<:utf8',$lexique);
 while (my $ligne=<E>) {
@@ -45,10 +55,18 @@ while (my $ligne=<E>) {
     # du sens (propre/figuré)
     chomp $ligne;
     my @cols=split(/\t/,$ligne);
-    $supra{$cols[0]}=$cols[1];
-    $meta{$cols[0]}=$cols[2];
-    $emotions{$cols[0]}=$cols[3];
-    $sens{$cols[0]}=$cols[4];
+    # Exclusion de qq entrées ambigües (interjections de surprise ou verbes dans des expressions)
+    if ($cols[0]!~/^(ciel|diable|scier|sécher|souffler|souffle|soufflé)$/) {
+	$supra{$cols[0]}=$cols[1];
+	$meta{$cols[0]}=$cols[2];
+	$emotions{$cols[0]}=$cols[3];
+	$sens{$cols[0]}=$cols[4];
+    }
+    # Ajout des adjectifs au féminin singulier et pluriel
+    if ($cols[0]=~/x$/) {
+	my $terme=$cols[0]; $terme=~s/eux$/euse/; $supra{$terme}=$cols[1]; $meta{$terme}=$cols[2]; $emotions{$terme}=$cols[3]; $sens{$terme}=$cols[4];
+	$terme=$cols[0]; $terme=~s/eux$/euses/; $supra{$terme}=$cols[1]; $meta{$terme}=$cols[2]; $emotions{$terme}=$cols[3]; $sens{$terme}=$cols[4];
+    }
 }
 close(E);
 
@@ -77,13 +95,17 @@ foreach my $texte (@rep) {
 
 	### 
 	# Recherche d'un mot isolé
-	if (exists $emotions{$token}) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
+	if (exists $emotions{$token}) {
+	    my $contexte="$lignes[$i-2] $lignes[$i-1]";
+	    # On ne récupère pas les informations si le contexte gauche utilisé est associé au terme cherché
+	    if (exists $exclusions{$contexte} && $exclusions{$contexte}!~/$token/) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
+	}
 	# Recherche d'expressions multi-tokens (de deux à cinq tokens)
 	else {
-	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 	    if ($lignes[$i+4] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3] $lignes[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 	}
 	# Cas particuliers : pluriel, infinitif
 	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
