@@ -19,7 +19,8 @@
 use utf8;
 use strict;
 
-my @rep=<$ARGV[0]/*tab>;
+my $ext="tok";  # *tab (v1), *tok (v2)
+my @rep=<$ARGV[0]/*$ext>;
 my $lexique="ressources/ose/emotaix.tsv";  # Lexique d'émotions
 my (%supra,%meta,%emotions,%sens);
 my %polarite=(
@@ -62,11 +63,6 @@ while (my $ligne=<E>) {
 	$emotions{$cols[0]}=$cols[3];
 	$sens{$cols[0]}=$cols[4];
     }
-    # Ajout des adjectifs au féminin singulier et pluriel
-    if ($cols[0]=~/x$/) {
-	my $terme=$cols[0]; $terme=~s/eux$/euse/; $supra{$terme}=$cols[1]; $meta{$terme}=$cols[2]; $emotions{$terme}=$cols[3]; $sens{$terme}=$cols[4];
-	$terme=$cols[0]; $terme=~s/eux$/euses/; $supra{$terme}=$cols[1]; $meta{$terme}=$cols[2]; $emotions{$terme}=$cols[3]; $sens{$terme}=$cols[4];
-    }
 }
 close(E);
 
@@ -75,7 +71,7 @@ close(E);
 # Traitement du fichier
 
 foreach my $texte (@rep) {
-    my $sortie=$texte; $sortie=~s/tab$/emo/;
+    my $sortie=$texte; $sortie=~s/$ext$/emo/;
     my @lignes=();
     warn "Produit $sortie depuis $texte\n";
 
@@ -89,7 +85,9 @@ foreach my $texte (@rep) {
 
     open(S,'>:utf8',$sortie);
     my $i=0;
-    foreach my $token (@lignes) {
+    foreach my $ligne (@lignes) {
+	my ($forme,$pos,$lemme)=split(/\t/,$ligne);
+	my $token=$lemme; # travail sur les lemmes plutôt que les formes
 	my $tags="";
 	my $terme="";
 
@@ -98,7 +96,7 @@ foreach my $texte (@rep) {
 	if (exists $emotions{$token}) {
 	    my $contexte="$lignes[$i-2] $lignes[$i-1]";
 	    # On ne récupère pas les informations si le contexte gauche utilisé est associé au terme cherché
-	    if (exists $exclusions{$contexte} && $exclusions{$contexte}!~/$token/) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
+	    if (!exists $exclusions{$contexte} && $exclusions{$contexte}!~/$token/) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
 	}
 	# Recherche d'expressions multi-tokens (de deux à cinq tokens)
 	else {
@@ -111,8 +109,7 @@ foreach my $texte (@rep) {
 	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
 
-	#$tags=~s/ \(.*\)$//;
-	print S "$token\t$tags\n";
+	print S "$forme\t$tags\n";
 	$i++;
     }
     close(S);
@@ -121,8 +118,6 @@ foreach my $texte (@rep) {
 
 sub recupereEmotion() {
     my $t=shift; my $s="";
-    #if ($emotions{$t} eq $meta{$t}) { $s="$emotions{$t}"; }
-    #else { $s="emo=$emotions{$t}/cat=$meta{$t}/cla=$supra{$t}/pol=$polarite{$supra{$t}}"; }
     $s="$emotions{$t}\t$meta{$t}\t$supra{$t}\t$polarite{$supra{$t}}";
     return $s;
 }
