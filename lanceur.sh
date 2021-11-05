@@ -75,3 +75,7 @@ perl visualisation-code-barre_v3.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/li
 perl visualisation-code-barre_v4.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2.html 200
 perl visualisation-code-barre_v4.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ gmmp-tv.html 180
 perl visualisation-code-barre_v4.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ gmmp-radio.html 300
+
+perl visualisation-code-barre_v5.pl ~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/ corpus2.html 200
+perl visualisation-code-barre_v5.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/tv/lium_asr_xml/ gmmp-tv.html 180
+perl visualisation-code-barre_v5.pl ~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/ visu-emo.html

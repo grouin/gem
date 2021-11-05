@@ -2,6 +2,8 @@
 
 racine=~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
 
+perl conversion-xml-to-tab.pl $racine/ 0.5
+
 for fichier in `ls $racine/*tab`
 do
     cat $fichier | sed "s/^$/§/g" >`echo $fichier | sed "s/tab/tok/"`
