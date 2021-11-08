@@ -57,7 +57,7 @@ foreach my $fichier (@rep) {
 	elsif ($cols[6]=~/n.gatif/) { $note-=0.1; $tokens.="$expression\, "; }
 	elsif ($cols[6]=~/positif/) { $note+=0.1; $tokens.="$expression\, "; }
 	$i++;
-	if ($genre!=$prec || $i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$genre\;"; $nb{$fichier}.="$i\;"; $malveillances{$fichier}.="$mal\;"; $i=0; $note=0; $tokens=""; $mal=""; }
+	if ($genre!=$prec || $i==$tailleSequence) { $codebarre{$fichier}.="$note\;"; $textecode{$fichier}.="$tokens\;"; $genres{$fichier}.="$prec\;"; $nb{$fichier}.="$i\;"; $malveillances{$fichier}.="$mal\;"; $i=0; $note=0; $tokens=""; $mal=""; }
 	$prec=$genre;
     }
     close(E);
@@ -82,19 +82,22 @@ foreach my $fichier (sort keys %codebarre) {
     foreach my $note (@notes) {
 	# Couleur de base : #FFFFFF
 	my $r=255; my $v=255; my $b=255;
+	my $sexe="";
 	# Femmes : bleu clair (positif), moyen (neutre), sombre (négatif)
 	if ($idGenre[$k]==2) {
 	    if ($note>0)    { $r=153; $v=255; $b=255; }
 	    elsif ($note<0) { $r=0; $v=153; $b=153; }
 	    else            { $r=76; $v=204; $b=204; }
+	    $sexe="f&eacute;minin";
 	}
 	# Hommes : jaune clair (positif), moyen (neutre), sombre (négatif)
 	elsif ($idGenre[$k]==1) {
 	    if ($note>0)    { $r=255; $v=255; $b=76; }
 	    elsif ($note<0) { $r=255; $v=170; $b=0; }
 	    else            { $r=255; $v=221; $b=0; }
+	    $sexe="masculin";
 	}
-	else { $r=255; $v=255; $b=255; }
+	else { $r=255; $v=255; $b=255; $sexe=""; }
 	# Absence d'émotion, on passe au blanc
 	if (length($textes[$k])<1) { $r=255; $v=255; $b=255; }
 
@@ -103,7 +106,6 @@ foreach my $fichier (sort keys %codebarre) {
 	$r="00" if ($r eq "0"); $v="00" if ($v eq "0"); $b="00" if ($b eq "0");
 	# Affichage
 	my $liste=$textes[$k]; $liste=~s/\, $//;
-	my $sexe="masculin"; if ($idGenre[$k]==2) { $sexe="f&eacute;minin"; }
 	my $taille=" de $nbTok[$k] tokens";
 	my $type="tour de parole"; if ($tailleSequence ne "") { $type="s&eacute;quence de $nbTok[$k] tokens dans un tour de parole"; $taille=""; }
 	print S "<a onMouseOver=\"montre('$liste ($type $sexe$taille)')\;\" onmouseout=\"cache()\;\">" if (length($textes[$k])>1);
