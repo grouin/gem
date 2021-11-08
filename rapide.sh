@@ -1,6 +1,7 @@
 # bash rapide.sh
 
 racine=~/Bureau/projet-GEM/corpus/ina/GMMP/radio/lium_asr_xml/
+racine=~/Bureau/projet-GEM/corpus/ina/corpus_2/lium_asr_xml/
 
 case $1 in
 
