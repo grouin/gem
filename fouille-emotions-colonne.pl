@@ -34,7 +34,8 @@ my %polarite=(
     "surprise"=>"inconnu",
     "non-specifié"=>"inconnu"
     );
-# Dictionnaire d'exclusion : contexte => termes
+# Dictionnaire d'exclusion : contexte => termes (permet de ne pas
+# appliquer une fouille d'opinion sur des expressions trop génériques)
 my %exclusions=(
     "aucun"=>"souci",
     "dans un"=>"souci"
@@ -75,6 +76,7 @@ foreach my $texte (@rep) {
     my @lignes=();
     warn "Produit $sortie depuis $texte\n";
 
+    # Récupère les lignes trois colonnes (forme POS lemme) du fichier *tok
     open(E,'<:utf8',$texte);
     while (my $ligne=<E>) {
 	chomp $ligne;
@@ -85,6 +87,7 @@ foreach my $texte (@rep) {
 
     open(S,'>:utf8',$sortie);
     my $i=0;
+    # Lignes forme POS lemme
     foreach my $ligne (@lignes) {
 	my ($forme,$pos,$lemme)=split(/\t/,$ligne);
 	my $token=$lemme; # travail sur les lemmes plutôt que les formes
@@ -93,21 +96,22 @@ foreach my $texte (@rep) {
 
 	### 
 	# Recherche d'un mot isolé
+	my $contexteGauche="$lignes[$i-2] $lignes[$i-1]";
+	my $contexteDroite="$lignes[$i+1]";
 	if (exists $emotions{$token}) {
-	    my $contexte="$lignes[$i-2] $lignes[$i-1]";
 	    # On ne récupère pas les informations si le contexte gauche utilisé est associé au terme cherché
-	    if (!exists $exclusions{$contexte} && $exclusions{$contexte}!~/$token/) { my $info=&recupereEmotion($token); $tags.="$info\t$token"; }
+	    if (!exists $exclusions{$contexteGauche} && $exclusions{$contexteGauche}!~/$token/) { my $info=&recupereEmotion($token,$contexteGauche,$contexteDroite); $tags.="$info\t$token"; }
 	}
-	# Recherche d'expressions multi-tokens (de deux à cinq tokens)
-	else {
-	    if ($lignes[$i+4] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3] $lignes[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	# Recherche d'expressions multi-tokens (de deux à cinq tokens après le token en cours d'examen)
+	else {	    
+	    if ($lignes[$i+4] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3] $lignes[$i+4]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+3] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2] $lignes[$i+3]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+2] ne "") { $terme="$lignes[$i] $lignes[$i+1] $lignes[$i+2]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
+	    if ($lignes[$i+1] ne "") { $terme="$lignes[$i] $lignes[$i+1]"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
 	}
 	# Cas particuliers : pluriel, infinitif
-	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
-	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme); $tags.="$info\t$terme"; }}
+	if ($token=~/s$/ && $tags eq "") { $terme=$token; $terme=~s/s$//; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
+	if ($token=~/e$/ && $tags eq "") { $terme=$token; $terme.="r"; if (exists $emotions{$terme}) { my $info=&recupereEmotion($terme,$contexteGauche,$contexteDroite); $tags.="$info\t$terme"; }}
 
 	print S "$forme\t$tags\n";
 	$i++;
@@ -117,7 +121,14 @@ foreach my $texte (@rep) {
 }
 
 sub recupereEmotion() {
-    my $t=shift; my $s="";
-    $s="$emotions{$t}\t$meta{$t}\t$supra{$t}\t$polarite{$supra{$t}}";
+    my $t=shift; my$cg=shift; my$cd=shift;
+    my $s="$emotions{$t}\t$meta{$t}\t$supra{$t}\t$polarite{$supra{$t}}";
+
+    my $polHC=$polarite{$supra{$t}}; my $polCTX=$polHC;
+    # Contextes gauche (ne / n' / pas) et droit (pas / plus) avec négation : inversion de la polarité
+    if ($cg=~/(pas\tADV\tpas|n\'\tADV\tne|ne\tADV\tne)/ || $cd=~/(pas\tADV\tpas|plus\tADV\tplus)/) { if ($polHC eq "négatif") { $polCTX="positif"; } elsif ($polHC eq "positif") { $polCTX="négatif"; } }
+
+    $s=~s/$polHC/$polCTX/;
+    #warn "*** $t => $s\n" if ($t=~/aimer/);
     return $s;
 }
